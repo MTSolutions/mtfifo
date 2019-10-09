@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MTFIFO</string>
+    <string name="activity_intent_filter_action">android.intent.ACTION_DECODE_DATA</string>
+    <string name="datawedge_intent_key_source">barcode_string</string>
+</resources>
