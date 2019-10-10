@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 // stores ExpansionPanel state information
 class Item {
@@ -18,6 +19,31 @@ class Item {
 }
 
 final List<String> entries = <String>['A'];
+
+
+Future<Bins> fetchBins() async {
+  var response = await http.get('http://192.168.1.141:8080/bins');
+  print('response: ${response.statusCode}');
+  if (response.statusCode == 200) {
+    print(json.decode(response.body));
+    return Bins.fromJson(json.decode(response.body));
+  } else {
+    throw Exception('Failed to load bins');
+  }
+}
+
+class Bins {
+  final List<Object> products;
+
+  Bins({this.products});
+
+  factory Bins.fromJson(Map<String, dynamic> json) {
+    var bins = Bins(
+      products: json['products']
+    );
+    return bins;
+  }
+}
 
 void main() => runApp(MyApp());
 
@@ -64,21 +90,28 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  Future<Bins> bins;
+
   String _scannerCode = 'No CODE';
 
   static const channel = const MethodChannel('mtfifo/scannercode');
+
+  _MyHomePageState({this.bins}) : super();
 
   @override
   void initState() {
     super.initState();
     channel.setMethodCallHandler(channelHandler);
-    print(fetchBins());
+    this.bins = fetchBins();
   }
 
   Future<dynamic> channelHandler(MethodCall methodCall) async {
     switch (methodCall.method) {
       case 'scannercode':
         print(methodCall.arguments);
+        print('channelHander fetchBins()');
+        this.bins = fetchBins();
+        print('bins: ${this.bins}');
         return methodCall.arguments;
       default:
         // todo - throw not implemented
@@ -99,10 +132,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }); 
   }
 
-  Future<http.Response> fetchBins() {
-    return http.get('http://192.168.1.141:8080/bins');
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -117,7 +146,17 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: _buildPanel()
+      body: FutureBuilder<Bins>(
+        future: bins,
+        builder: (context, snapshot) {
+          print('builder!');
+          if (snapshot.hasData) {
+            print('Data: ${snapshot.data}');
+            return _buildPanel();
+          }
+          return _buildPanel();
+        }
+      )
     );
   }
 
