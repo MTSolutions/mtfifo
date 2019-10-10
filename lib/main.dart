@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
 
 // stores ExpansionPanel state information
 class Item {
@@ -62,15 +63,32 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  
+
   String _scannerCode = 'No CODE';
 
-  static const platform = const MethodChannel('mtfifo/scannercode');
+  static const channel = const MethodChannel('mtfifo/scannercode');
+
+  @override
+  void initState() {
+    super.initState();
+    channel.setMethodCallHandler(channelHandler);
+    print(fetchBins());
+  }
+
+  Future<dynamic> channelHandler(MethodCall methodCall) async {
+    switch (methodCall.method) {
+      case 'scannercode':
+        print(methodCall.arguments);
+        return methodCall.arguments;
+      default:
+        // todo - throw not implemented
+    }
+  }
 
   Future<void> _getScannerCode() async {
     String scannerCode;
     try {
-      final String result = await platform.invokeMethod('getScannerCode');
+      final String result = await channel.invokeMethod('getScannerCode');
       scannerCode = 'CODE: $result % .';
     } on PlatformException catch (e) {
       scannerCode = "Failed to get code: '${e.message}'.";
@@ -81,6 +99,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }); 
   }
 
+  Future<http.Response> fetchBins() {
+    return http.get('http://192.168.1.141:8080/bins');
+  }
 
   @override
   Widget build(BuildContext context) {

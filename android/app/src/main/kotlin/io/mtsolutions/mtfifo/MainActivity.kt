@@ -11,22 +11,31 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.BroadcastReceiver
 import android.widget.Toast
+import android.content.Context
 
 class MainActivity: FlutterActivity() {
 
   private val CHANNEL = "mtfifo/scannercode";
-  var receiver: BroadcastReceiver? = null;
+  protected lateinit var _channel: MethodChannel;
 
+  val receiver = object : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val message = intent.extras.getString("barcode_string")
+        println("Broadcast: " + message)
+        // Send scanned code to Flutter
+        _channel.invokeMethod("scannercode", message)
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+  }
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     
-
     val filter = IntentFilter()
     filter.addAction("android.intent.ACTION_DECODE_DATA")
-    receiver = ScannerCodeReceiver()
     registerReceiver(receiver, filter)
     
-    MethodChannel(flutterView, CHANNEL).setMethodCallHandler { call, result ->
+    _channel = MethodChannel(flutterView, CHANNEL)
+    _channel.setMethodCallHandler { call, result ->
      if (call.method == "getScannerCode") {
         val scannerCode = getScannerCode()
         result.success(scannerCode)
