@@ -5,24 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
-// stores ExpansionPanel state information
-class Item {
-  Item({
-    this.expandedValue,
-    this.headerValue,
-    this.isExpanded = false,
-  });
-
-  String expandedValue;
-  String headerValue;
-  bool isExpanded;
-}
-
 final List<String> entries = <String>['A'];
 
 
 Future<Bins> fetchBins() async {
-  var response = await http.get('http://192.168.1.141:8080/bins');
+  var response = await http.get('http://192.168.51.78:8080/bins');
   print('response: ${response.statusCode}');
   if (response.statusCode == 200) {
     print(json.decode(response.body));
@@ -33,17 +20,50 @@ Future<Bins> fetchBins() async {
 }
 
 class Bins {
-  final List<Object> products;
+  List<Products> products;
 
   Bins({this.products});
 
-  factory Bins.fromJson(Map<String, dynamic> json) {
-    var bins = Bins(
-      products: json['products']
-    );
-    return bins;
+  Bins.fromJson(Map<String, dynamic> json) {
+    if (json['products'] != null) {
+      products = new List<Products>();
+      json['products'].forEach((v) {
+        products.add(new Products.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.products != null) {
+      data['products'] = this.products.map((v) => v.toJson()).toList();
+    }
+    return data;
   }
 }
+
+class Products {
+  String id;
+  int weight;
+  int ts;
+
+  Products({this.id, this.weight, this.ts});
+
+  Products.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    weight = json['weight'];
+    ts = json['ts'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['weight'] = this.weight;
+    data['ts'] = this.ts;
+    return data;
+  }
+}
+
 
 void main() => runApp(MyApp());
 
@@ -102,7 +122,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     channel.setMethodCallHandler(channelHandler);
-    this.bins = fetchBins();
+    bins = fetchBins();
+  }
+
+  Future<void> updateBins() async {
+    setState(() {
+      bins = fetchBins();
+    });
   }
 
   Future<dynamic> channelHandler(MethodCall methodCall) async {
@@ -110,8 +136,11 @@ class _MyHomePageState extends State<MyHomePage> {
       case 'scannercode':
         print(methodCall.arguments);
         print('channelHander fetchBins()');
-        this.bins = fetchBins();
         print('bins: ${this.bins}');
+        final response = await http.get('http://192.168.51.78:8080/markbin/${methodCall.arguments}');
+        setState(() {
+          bins = fetchBins();
+        });
         return methodCall.arguments;
       default:
         // todo - throw not implemented
@@ -146,21 +175,26 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: FutureBuilder<Bins>(
-        future: bins,
-        builder: (context, snapshot) {
-          print('builder!');
-          if (snapshot.hasData) {
-            print('Data: ${snapshot.data}');
-            return _buildPanel();
-          }
-          return _buildPanel();
-        }
+      body: new Container(
+        child: new RefreshIndicator(
+          child: FutureBuilder<Bins>(
+            future: bins,
+            builder: (context, snapshot) {
+              print('builder!');
+              if (snapshot.hasData) {
+                print('Data: ${snapshot.data}');
+                return _buildPanel(snapshot.data);
+              }
+              return _buildPanel(snapshot.data);
+            }
+          ),
+          onRefresh: updateBins
+        )
       )
     );
   }
 
-  Widget _buildPanel() {
+  Widget _buildPanel(data) {
     return new ListView.builder(
       shrinkWrap: true,
       itemCount: entries.length,
@@ -175,35 +209,15 @@ class _MyHomePageState extends State<MyHomePage> {
           margin: EdgeInsets.all(16),
           child: ListView(
             shrinkWrap: true,
+            primary: false,
             children: ListTile.divideTiles(
               context: context,
-              tiles: [
-                ListTile(
-                  title: Text(_scannerCode,
-                      style: TextStyle(fontWeight: FontWeight.w800)),
-                  leading: Icon(
-                    Icons.restaurant_menu,
-                    color: Colors.blue[500],
-                  ),
-                  dense: false,
+              tiles: data.products.map<Widget>((product) => ListTile(
+                  title: Text(product.id),
                   onTap: () {
-                    _getScannerCode();
-                    print(_scannerCode);
+                    print(product.weight);
                   }
-                ),
-                ListTile(
-                  title: Text('Producto 1'),
-                  onTap: () {
-                    print("Hello 1");
-                  }
-                ),
-                ListTile(
-                  title: Text('Producto 2'),
-                  onTap: () {
-                    print("Hello 2");
-                  }
-                ),
-              ]
+                )).toList()           
             ).toList()
           )
         ); 

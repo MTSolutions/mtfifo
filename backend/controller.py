@@ -14,6 +14,14 @@ def CORS():
 
 class Root(object):
 
+    fifo = [
+        {'id': 'LE000051', 'weight': 394, 'ts': 1570733138},
+        {'id': 'LE000050', 'weight': 294, 'ts': 1570713138},
+        {'id': 'LE000041', 'weight': 119, 'ts': 1570613138},
+        {'id': 'RE000051', 'weight': 123, 'ts': 1570723138},
+        {'id': 'RE000050', 'weight': 321, 'ts': 1570703138}
+    ]
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
@@ -25,14 +33,17 @@ class Root(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def bins(self):
-        bin1 = {'id': 'LE000051', 'weight': 394, 'ts': 1570733138}
-        bin2 = {'id': 'LE000050', 'weight': 294, 'ts': 1570713138}
-        bin3 = {'id': 'LE000041', 'weight': 119, 'ts': 1570613138}
-        prod1 = {'name': 'Lechuga', 'bins': [bin1, bin2, bin3]}
-        bin4 = {'id': 'RE000051', 'weight': 123, 'ts': 1570723138}
-        bin5 = {'id': 'RE000050', 'weight': 321, 'ts': 1570703138}
-        prod2 = {'name': 'Repollo', 'bins': [bin4, bin5]}
-        return {'products': [prod1, prod2]}
+        return {'products': self.fifo}
+
+    
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def markbin(self, _id):
+        for item in self.fifo:
+            if item['id'] == _id:
+                self.fifo.remove(item)
+        return {'status': 'ok'}
 
 
 if __name__ == '__main__':
