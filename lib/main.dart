@@ -4,12 +4,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:fluttertoast/fluttertoast.dart';
+
 
 final List<String> entries = <String>['A'];
 
 
 Future<Bins> fetchBins() async {
-  var response = await http.get('http://192.168.51.78:8080/bins');
+  var response = await http.get('http://mts1.mtsolutions.io:8000/bins');
   print('response: ${response.statusCode}');
   if (response.statusCode == 200) {
     print(json.decode(response.body));
@@ -45,14 +48,14 @@ class Bins {
 class Products {
   String id;
   int weight;
-  int ts;
+  String ts;
 
   Products({this.id, this.weight, this.ts});
 
   Products.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     weight = json['weight'];
-    ts = json['ts'];
+    ts = timeago.format(new DateTime.now().subtract(new Duration(seconds: json['ts'])), locale: 'es');
   }
 
   Map<String, dynamic> toJson() {
@@ -112,8 +115,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<Bins> bins;
 
-  String _scannerCode = 'No CODE';
-
   static const channel = const MethodChannel('mtfifo/scannercode');
 
   _MyHomePageState({this.bins}) : super();
@@ -137,7 +138,10 @@ class _MyHomePageState extends State<MyHomePage> {
         print(methodCall.arguments);
         print('channelHander fetchBins()');
         print('bins: ${this.bins}');
-        final response = await http.get('http://192.168.51.78:8080/markbin/${methodCall.arguments}');
+        final response = await http.get('http://mts1.mtsolutions.io:8000/markbin/${methodCall.arguments}');
+        print('response: ${json.decode(response.body)}');
+        var jsond = json.decode(response.body);
+        print('response ${jsond["message"]}');
         setState(() {
           bins = fetchBins();
         });
@@ -145,20 +149,6 @@ class _MyHomePageState extends State<MyHomePage> {
       default:
         // todo - throw not implemented
     }
-  }
-
-  Future<void> _getScannerCode() async {
-    String scannerCode;
-    try {
-      final String result = await channel.invokeMethod('getScannerCode');
-      scannerCode = 'CODE: $result % .';
-    } on PlatformException catch (e) {
-      scannerCode = "Failed to get code: '${e.message}'.";
-    }
-
-    setState(() {
-      _scannerCode = scannerCode;
-    }); 
   }
 
   @override
@@ -213,11 +203,13 @@ class _MyHomePageState extends State<MyHomePage> {
             children: ListTile.divideTiles(
               context: context,
               tiles: data.products.map<Widget>((product) => ListTile(
-                  title: Text(product.id),
-                  onTap: () {
-                    print(product.weight);
-                  }
-                )).toList()           
+                trailing: Text("${product.weight} KG"),
+                title: Text("${product.id}"),
+                subtitle: Text("Ingresado ${product.ts}"),
+                onTap: () {
+                  print(product.weight);
+                }
+              )).toList()           
             ).toList()
           )
         ); 

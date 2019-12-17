@@ -24,7 +24,6 @@ class MainActivity: FlutterActivity() {
         println("Broadcast: " + message)
         // Send scanned code to Flutter
         _channel.invokeMethod("scannercode", message)
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
   }
   override fun onCreate(savedInstanceState: Bundle?) {

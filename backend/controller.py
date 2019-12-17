@@ -15,11 +15,11 @@ def CORS():
 class Root(object):
 
     fifo = [
-        {'id': 'LE000051', 'weight': 394, 'ts': 1570733138},
-        {'id': 'LE000050', 'weight': 294, 'ts': 1570713138},
-        {'id': 'LE000041', 'weight': 119, 'ts': 1570613138},
-        {'id': 'RE000051', 'weight': 123, 'ts': 1570723138},
-        {'id': 'RE000050', 'weight': 321, 'ts': 1570703138}
+        {'id': 'LE000051', 'weight': 394, 'ts': int((dt.now() - (dt.now() - td(seconds=5000))).total_seconds())},
+        {'id': 'LE000050', 'weight': 294, 'ts': int((dt.now() - (dt.now() - td(seconds=5500))).total_seconds())},
+        {'id': 'LE000041', 'weight': 119, 'ts': int((dt.now() - (dt.now() - td(seconds=20000))).total_seconds())},
+        {'id': 'RE000051', 'weight': 123, 'ts': int((dt.now() - (dt.now() - td(seconds=35000))).total_seconds())},
+        {'id': 'RE000050', 'weight': 321, 'ts': int((dt.now() - (dt.now() - td(seconds=265400))).total_seconds())}
     ]
 
     @cherrypy.expose
@@ -33,17 +33,20 @@ class Root(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def bins(self):
-        return {'products': self.fifo}
+        return {'products': sorted(self.fifo, key=lambda x: x['ts'], reverse=True)}
 
     
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def markbin(self, _id):
+        message = 'Bin {} incorrecto'.format(_id)
         for item in self.fifo:
             if item['id'] == _id:
                 self.fifo.remove(item)
-        return {'status': 'ok'}
+                message = 'Bin {} procesado correctamente'.format(_id)
+                
+        return {'status': 'ok', 'message': message}
 
 
 if __name__ == '__main__':
