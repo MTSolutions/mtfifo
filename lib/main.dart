@@ -4,15 +4,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:mtfifo/models/storageunit.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:fluttertoast/fluttertoast.dart';
 
 
 final List<String> entries = <String>['A'];
 
 
 Future<Bins> fetchBins() async {
-  var response = await http.get('http://mts1.mtsolutions.io:8000/bins');
+  var response = await http.get('http://172.105.153.220:8080/warehouse/bins');
   print('response: ${response.statusCode}');
   if (response.statusCode == 200) {
     print(json.decode(response.body));
@@ -88,7 +88,11 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.deepOrange,
       ),
-      home: MyHomePage(title: 'MTcontrol FIFO'),
+      initialRoute: '/',
+      routes: {
+        '/': (BuildContext context) => MyHomePage(title: 'MTcontrol FIFO'),
+        '/info': (BuildContext context) => SecondRoute()
+      }
     );
   }
 }
@@ -127,6 +131,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> updateBins() async {
+    print('updateBins()');
+    channel.setMethodCallHandler(channelHandler);
     setState(() {
       bins = fetchBins();
     });
@@ -135,17 +141,24 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<dynamic> channelHandler(MethodCall methodCall) async {
     switch (methodCall.method) {
       case 'scannercode':
+        print('channelHandler');
         print(methodCall.arguments);
         print('channelHander fetchBins()');
         print('bins: ${this.bins}');
-        final response = await http.get('http://mts1.mtsolutions.io:8000/markbin/${methodCall.arguments}');
-        print('response: ${json.decode(response.body)}');
+
+        if (methodCall.arguments == "exit") {
+          Navigator.pushNamed(context, "/");
+        }
+
+        final response = await http.get('http://172.105.153.220:8080/markbin/${methodCall.arguments}');
         var jsond = json.decode(response.body);
-        print('response ${jsond["message"]}');
         setState(() {
           bins = fetchBins();
         });
+        print('message: ${jsond["message"]}');
+        Navigator.pushNamed(context, '/info');
         return methodCall.arguments;
+        
       default:
         // todo - throw not implemented
     }
@@ -208,6 +221,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 subtitle: Text("Ingresado ${product.ts}"),
                 onTap: () {
                   print(product.weight);
+                  Navigator.pushNamed(context, '/info',
+                    arguments: StorageUnit(
+                      id: product.id, 
+                      ts: product.ts, 
+                      weight: product.weight)
+                  );
                 }
               )).toList()           
             ).toList()
@@ -215,5 +234,70 @@ class _MyHomePageState extends State<MyHomePage> {
         ); 
       }
     );
+  }
+}
+
+class SecondRoute extends StatefulWidget {
+
+  @override
+  _SecondRouteState createState() => _SecondRouteState();
+}
+
+class _SecondRouteState extends State<SecondRoute> {
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final StorageUnit args = ModalRoute.of(context).settings.arguments;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(args.id),
+      ),
+      body: Center(
+        child: Column(
+          children: <Widget>[
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.beenhere, size: 50),
+                  title: Text(args.id),
+                  subtitle: Text(args.ts)
+                )
+              ),
+              ButtonBar(
+                children: <Widget>[
+                  RaisedButton(
+                    color: Colors.blue,
+                    textColor: Colors.white,
+                    disabledColor: Colors.grey,
+                    disabledTextColor: Colors.black,
+                    padding: EdgeInsets.all(8.0),
+                    splashColor: Colors.blueAccent,
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("Mover a Producción"),
+                  ),
+                  RaisedButton(
+                    color: Colors.red,
+                    textColor: Colors.white,
+                    disabledColor: Colors.grey,
+                    disabledTextColor: Colors.black,
+                    padding: EdgeInsets.all(8.0),
+                    splashColor: Colors.blueAccent,
+                    onPressed: () {
+
+                    },
+                    child: Text("Bloquear"),
+                  ),
+                ]
+              )
+            ]
+          )
+        )
+      );
   }
 }
