@@ -112,9 +112,9 @@ class _MainViewState extends State<MainView> {
         crossAxisSpacing: 5,
         mainAxisSpacing: 5,
         children: <Widget>[
-          DashboardButton(icon: Icons.file_download, title: 'Colocar'),
-          DashboardButton(icon: Icons.file_upload, title: 'Extraer'),
-          DashboardButton(icon: Icons.playlist_add_check, title: 'FIFO'),
+          DashboardButton(icon: "assets/colocar.svg", title: 'Colocar'),
+          DashboardButton(icon: "assets/extraer.svg", title: 'Extraer'),
+          DashboardButton(icon: "assets/fifo.svg", title: 'Ordenes'),
         ],
       ),
     );
@@ -311,7 +311,7 @@ class _InfoViewState extends State<InfoView> {
 class DashboardButton extends StatelessWidget {
   const DashboardButton({Key key, this.title, this.icon}) : super(key: key);
   final String title;
-  final IconData icon;
+  final String icon;
 
   @override
   Widget build(BuildContext context) {
@@ -322,7 +322,7 @@ class DashboardButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Icon(this.icon, size: 40.0, color: textStyle.color),
+                SvgPicture.asset(this.icon, semanticsLabel: this.title),
                 SizedBox(height: 15),
                 Text(this.title, style: textStyle),
           ]
