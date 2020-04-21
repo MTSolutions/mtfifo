@@ -77,51 +77,64 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MTFIFO',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.deepOrange,
       ),
       initialRoute: '/',
       routes: {
-        '/': (BuildContext context) => MyHomePage(title: 'MTcontrol FIFO'),
-        '/info': (BuildContext context) => SecondRoute()
+        '/': (BuildContext context) => MainView(title: 'MTwms'),
+        '/fifo': (BuildContext context) => FIFOView(title: 'MTwms FIFO'),
+        '/info': (BuildContext context) => InfoView()
       }
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
+class MainView extends StatefulWidget {
+  MainView({Key key, this.title}) : super(key: key);
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MainViewState createState() => _MainViewState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MainViewState extends State<MainView> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: GridView.count(
+        crossAxisCount: 2,
+        padding: const EdgeInsets.all(20),
+        crossAxisSpacing: 5,
+        mainAxisSpacing: 5,
+        children: <Widget>[
+          DashboardButton(icon: Icons.file_download, title: 'Colocar'),
+          DashboardButton(icon: Icons.file_upload, title: 'Extraer'),
+          DashboardButton(icon: Icons.playlist_add_check, title: 'FIFO'),
+        ],
+      ),
+    );
+  }
+}
+
+class FIFOView extends StatefulWidget {
+  FIFOView({Key key, this.title}) : super(key: key);
+  final String title;
+
+  @override
+  _FIFOViewState createState() => _FIFOViewState();
+}
+
+class _FIFOViewState extends State<FIFOView> {
 
   Future<Bins> bins;
 
   static const channel = const MethodChannel('mtfifo/scannercode');
 
-  _MyHomePageState({this.bins}) : super();
+  _FIFOViewState({this.bins}) : super();
 
   @override
   void initState() {
@@ -166,16 +179,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: new Container(
@@ -237,13 +242,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class SecondRoute extends StatefulWidget {
+class InfoView extends StatefulWidget {
 
   @override
-  _SecondRouteState createState() => _SecondRouteState();
+  _InfoViewState createState() => _InfoViewState();
 }
 
-class _SecondRouteState extends State<SecondRoute> {
+class _InfoViewState extends State<InfoView> {
 
   @override
   void initState() {
@@ -301,3 +306,29 @@ class _SecondRouteState extends State<SecondRoute> {
       );
   }
 }
+
+class DashboardButton extends StatelessWidget {
+  const DashboardButton({Key key, this.title, this.icon}) : super(key: key);
+  final String title;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle textStyle = Theme.of(context).textTheme.button;
+        return Card(
+          color: Colors.white,
+          child: Center(child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Icon(this.icon, size: 40.0, color: textStyle.color),
+                SizedBox(height: 15),
+                Text(this.title, style: textStyle),
+          ]
+        ),
+      )
+    );
+  }
+}
+
+
