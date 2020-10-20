@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mtfifo/views/fifo/fifo.dart';
 import 'package:mtfifo/views/colocar/colocar.dart';
+import 'package:mtfifo/views/extraer/extraer.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -20,7 +21,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (BuildContext context) => MainView(title: 'MTwms'),
         '/fifo': (BuildContext context) => FIFOView(title: 'Ordenes FIFO'),
-        '/colocar': (BuildContext context) => ColocarView(title: 'Colocar Item')
+        '/colocar': (BuildContext context) => ColocarView(title: 'Colocar Item'),
+        '/extraer': (BuildContext context) => ExtraerView(title: 'Extraer Item')
       }
     );
   }
