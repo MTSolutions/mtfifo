@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'package:mtfifo/models/storageunit.dart';
 
 
 final List<String> entries = <String>['A'];
@@ -170,17 +169,11 @@ class _FIFOViewState extends State<FIFOView> {
             children: ListTile.divideTiles(
               context: context,
               tiles: data.products.map<Widget>((product) => ListTile(
-                trailing: Text("${product.weight} KG"),
+                trailing: Text("${product.name} KG"),
                 title: Text("${product.id}"),
-                subtitle: Text("Ingresado ${product.ts}"),
+                subtitle: Text("Ingresado ${product.name}"),
                 onTap: () {
-                  print(product.weight);
-                  Navigator.pushNamed(context, '/info',
-                    arguments: StorageUnit(
-                      id: product.id, 
-                      ts: product.ts, 
-                      weight: product.weight)
-                  );
+                  print(product.name);
                 }
               )).toList()           
             ).toList()

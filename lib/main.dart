@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:mtfifo/services/storage_service.dart';
+import 'package:mtfifo/views/bin/bin.dart';
 import 'package:mtfifo/views/fifo/fifo.dart';
-import 'package:mtfifo/views/colocar/colocar.dart';
-import 'package:mtfifo/views/extraer/extraer.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -12,18 +13,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MTFIFO',
-      theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_)=> new StorageService())
+      ],
+      child: MaterialApp(
+        title: 'MTFIFO',
+        theme: ThemeData(
+          primarySwatch: Colors.deepOrange,
+        ),
+        initialRoute: '/',
+        routes: {
+          '/': (BuildContext context) => MainView(title: 'MTwms'),
+          '/fifo': (BuildContext context) => FIFOView(title: 'Ordenes FIFO'),
+          '/bin': (BuildContext context) => BinView(title: 'Bin'),
+        }
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (BuildContext context) => MainView(title: 'MTwms'),
-        '/fifo': (BuildContext context) => FIFOView(title: 'Ordenes FIFO'),
-        '/colocar': (BuildContext context) => ColocarView(title: 'Colocar Item'),
-        '/extraer': (BuildContext context) => ExtraerView(title: 'Extraer Item')
-      }
     );
   }
 }
@@ -50,9 +55,8 @@ class _MainViewState extends State<MainView> {
         crossAxisSpacing: 5,
         mainAxisSpacing: 5,
         children: <Widget>[
-          DashboardButton(icon: "assets/colocar.svg", title: 'Colocar', view: '/colocar'),
-          DashboardButton(icon: "assets/extraer.svg", title: 'Extraer', view: '/extraer'),
-          DashboardButton(icon: "assets/fifo.svg", title: 'Ordenes FIFO', view: '/fifo'),
+          DashboardButton(icon: "assets/colocar.svg", title: 'Colocar/Extraer', view: '/bin'),
+          DashboardButton(icon: "assets/fifo.svg", title: 'Ordenes FIFO', view: '/fifo')
         ],
       ),
     );
@@ -76,7 +80,8 @@ class DashboardButton extends StatelessWidget {
       },
       child: Card(
         color: Colors.white,
-        child: Center(child: Column(
+        child: Center(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[

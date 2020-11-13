@@ -26,6 +26,7 @@ class MainActivity: FlutterActivity() {
         _channel.invokeMethod("scannercode", message)
     }
   }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     
