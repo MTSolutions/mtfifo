@@ -81,6 +81,21 @@ class StorageService with ChangeNotifier {
     }
   }
 
+  setBoxStatus(String box, int status) async {
+    final url = 'http://192.168.100.3:6543/wms/storageboxes/$box';
+    Map<String, String> headers = {"Content-type": "application/json"};
+    String payload = '{"id": "$box", "status": "$status"}';
+    print(payload);
+    try {
+      final resp = await http.put(url, headers: headers, body: payload);
+      print('load ok $resp');
+      notifyListeners();
+      getBoxesByPickingOrder(_selectedPickingOrder);
+    } catch (_) {
+      print('response error $_');
+    }
+  }
+
   setBoxLocation(String box, String location) async {
     final url =
         'http://192.168.100.3:6543/wms/storagebins/$location/storageboxes/$box';

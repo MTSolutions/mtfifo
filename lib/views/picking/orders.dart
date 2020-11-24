@@ -79,12 +79,12 @@ class OrderItemList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-        separatorBuilder: (context, index) =>
-            Divider(color: Colors.grey[300], height: 2.0),
-        itemCount: this.orders.length,
-        itemBuilder: (BuildContext context, int index) {
-          return OrderItemView(order: this.orders[index], index: index);
-        });
+      separatorBuilder: (context, index) =>
+          Divider(color: Colors.grey[300], height: 2.0),
+      itemCount: this.orders.length,
+      itemBuilder: (BuildContext context, int index) {
+        return OrderItemView(order: this.orders[index], index: index);
+      });
   }
 }
 
