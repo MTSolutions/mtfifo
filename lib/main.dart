@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mtfifo/services/storage_service.dart';
 import 'package:mtfifo/views/bin/bin.dart';
-import 'package:mtfifo/views/fifo/fifo.dart';
+import 'package:mtfifo/views/picking/orders.dart';
+import 'package:mtfifo/views/picking/boxes.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -25,13 +26,15 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (BuildContext context) => MainView(title: 'MTwms'),
-          '/fifo': (BuildContext context) => FIFOView(title: 'Ordenes FIFO'),
+          '/orders': (BuildContext context) => OrdersView(title: 'Ordenes de Picking'),
+          '/pickingboxes': (BuildContext context) => PickingBoxesView(title: 'Items'),
           '/bin': (BuildContext context) => BinView(title: 'Bin'),
         }
       ),
     );
   }
 }
+
 
 class MainView extends StatefulWidget {
   MainView({Key key, this.title}) : super(key: key);
@@ -40,6 +43,7 @@ class MainView extends StatefulWidget {
   @override
   _MainViewState createState() => _MainViewState();
 }
+
 
 class _MainViewState extends State<MainView> {
   @override
@@ -55,8 +59,8 @@ class _MainViewState extends State<MainView> {
         crossAxisSpacing: 5,
         mainAxisSpacing: 5,
         children: <Widget>[
-          DashboardButton(icon: "assets/colocar.svg", title: 'Colocar/Extraer', view: '/bin'),
-          DashboardButton(icon: "assets/fifo.svg", title: 'Ordenes FIFO', view: '/fifo')
+          DashboardButton(icon: "assets/colocar.svg", title: 'Stock por Bin', view: '/bin'),
+          DashboardButton(icon: "assets/fifo.svg", title: 'Picking', view: '/orders')
         ],
       ),
     );

@@ -1,24 +1,26 @@
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
 import 'dart:convert';
 
 Warehouse warehouseFromJson(String str) => Warehouse.fromJson(json.decode(str));
-
 String warehouseToJson(Warehouse data) => json.encode(data.toJson());
 
 class Warehouse {
-  Warehouse({
-    this.storagebins,
-  });
+  Warehouse({this.storagebins, this.pickingorders});
 
   List<StorageBin> storagebins;
+  List<PickingOrder> pickingorders;
 
   factory Warehouse.fromJson(Map<String, dynamic> json) => Warehouse(
     storagebins: List<StorageBin>.from(
         json["storagebins"].map((x) => StorageBin.fromJson(x))),
+    pickingorders: List<PickingOrder>.from(
+        json["pickingorders"].map((x) => PickingOrder.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
     "storagebins": List<dynamic>.from(storagebins.map((x) => x.toJson())),
+    "pickingorders":
+        List<dynamic>.from(pickingorders.map((x) => x.toJson())),
   };
 }
 
@@ -67,7 +69,7 @@ class StorageUnit {
   factory StorageUnit.fromJson(Map<String, dynamic> json) => StorageUnit(
     id: json["id"],
     storageboxes: List<StorageBox>.from(
-      json["storageboxes"].map((x) => StorageBox.fromJson(x))),
+        json["storageboxes"].map((x) => StorageBox.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -77,17 +79,21 @@ class StorageUnit {
 }
 
 class StorageBox {
-  StorageBox({this.oc, this.id, this.name, this.expiration});
+  StorageBox({this.oc, this.id, this.name, this.location, this.status, this.expiration});
 
   String oc;
   int id;
   String name;
+  String location;
+  String status;
   String expiration;
 
   factory StorageBox.fromJson(Map<String, dynamic> json) => StorageBox(
     oc: json["oc"],
     id: json["id"],
     name: json["name"],
+    location: json["location"],
+    status: json["status"],
     expiration: json["expiration"],
   );
 
@@ -95,6 +101,63 @@ class StorageBox {
     "oc": oc,
     "id": id,
     "name": name,
+    "location": location,
+    "status": status,
     "expiration": expiration,
   };
+}
+
+PickingOrderList pickingorderlistFromJson(String str) =>
+    PickingOrderList.fromJson(json.decode(str));
+String pickingorderlistToJson(PickingOrderList data) =>
+    json.encode(data.toJson());
+
+class PickingOrderList {
+  PickingOrderList({this.pickingorders});
+
+  List<PickingOrder> pickingorders;
+
+  factory PickingOrderList.fromJson(Map<String, dynamic> json) =>
+      PickingOrderList(
+        pickingorders: List<PickingOrder>.from(
+            json["pickingorders"].map((x) => PickingOrder.fromJson(x))),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "pickingorders":
+            List<dynamic>.from(pickingorders.map((x) => x.toJson())),
+      };
+}
+
+PickingOrder pickingorderFromJson(String str) =>
+    PickingOrder.fromJson(json.decode(str));
+String pickingorderToJson(PickingOrder data) => json.encode(data.toJson());
+
+class PickingOrder {
+  PickingOrder({
+    this.id,
+    this.code,
+    this.storageboxes,
+    this.location,
+  });
+
+  int id;
+  String code;
+  String location;
+  List<StorageBox> storageboxes;
+
+  factory PickingOrder.fromJson(Map<String, dynamic> json) => PickingOrder(
+        id: json["id"],
+        code: json["code"],
+        location: json["location"],
+        storageboxes: List<StorageBox>.from(
+            json["storageboxes"].map((x) => StorageBox.fromJson(x))),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "code": code,
+        "location": location,
+        "storageboxes": List<dynamic>.from(storageboxes.map((x) => x.toJson())),
+      };
 }

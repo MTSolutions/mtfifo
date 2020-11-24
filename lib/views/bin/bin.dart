@@ -25,12 +25,14 @@ class _BinViewState extends State<BinView> {
     switch (methodCall.method) {
       case 'scannercode':
         print('scannercode: ${methodCall.arguments}');
-        final storageService = Provider.of<StorageService>(context, listen: false);
+        final storageService =
+            Provider.of<StorageService>(context, listen: false);
 
         // first three letters for command, rest is payload
         String command = methodCall.arguments.substring(0, 3);
-        String payload = methodCall.arguments.substring(3, methodCall.arguments.length);
-        
+        String payload =
+            methodCall.arguments.substring(3, methodCall.arguments.length);
+
         switch (command) {
           case 'BIN':
             storageService.selectedBin = payload;
@@ -73,13 +75,14 @@ class BinInfoPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final storageService = Provider.of<StorageService>(context);
     return Card(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           ListTile(
             onTap: () {
-              print('Hello');
+              storageService.getBoxesByBin(bin);
             },
             title: Text('BIN: $bin'),
             subtitle: Text('Rack:'),
@@ -97,7 +100,11 @@ class BoxItemList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return ListView.separated(
+      separatorBuilder: (context, index) => Divider(
+        color: Colors.grey[300],
+        height: 2.0
+      ),
       itemCount: this.boxes.length,
       itemBuilder: (BuildContext context, int index) {
         return BoxItemView(box: this.boxes[index], index: index);

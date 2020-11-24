@@ -4,10 +4,13 @@ import 'package:mtfifo/models/storage_models.dart';
 
 class StorageService with ChangeNotifier {
   List<StorageBox> boxes = [];
+  List<PickingOrder> orders = [];
   String _selectedBin = '000000';
   String _selectedBox = '0_0000';
+  PickingOrder _selectedPickingOrder = new PickingOrder();
 
   List<StorageBox> get getBoxes => this.boxes;
+  List<PickingOrder> get getOrders => this.orders;
 
   StorageService() {
     // todo
@@ -20,6 +23,12 @@ class StorageService with ChangeNotifier {
     this.getBoxesByBin(value);
   }
 
+  get selectedPickingOrder => this._selectedPickingOrder;
+  set selectedPickingOrder(PickingOrder value) {
+    this._selectedPickingOrder = value;
+    this.getBoxesByPickingOrder(value);
+  }
+
   get selectedBox => this._selectedBox;
   set selectedBox(String value) {
     print('selectedBox: $value');
@@ -29,7 +38,7 @@ class StorageService with ChangeNotifier {
 
   getBoxesByBin(String location) async {
     final url =
-        'http://bimbo.mtsolutions.io:6543/wms/storagebins/$location/storageboxes';
+        'http://192.168.100.3:6543/wms/storagebins/$location/storageboxes';
     try {
       final resp = await http.get(url);
       final boxesResponse = storageunitFromJson(resp.body);
@@ -38,13 +47,43 @@ class StorageService with ChangeNotifier {
       print('load ok');
       notifyListeners();
     } catch (_) {
-      print('response error');
+      print('response error $_');
+    }
+  }
+
+  fetchOrders() async {
+    final url = 'http://192.168.100.3:6543/wms/pickingorders';
+    try {
+      final resp = await http.get(url);
+      final ordersResponse = pickingorderlistFromJson(resp.body);
+      this.orders = [];
+      this.orders.addAll(ordersResponse.pickingorders);
+      print('load ok');
+      notifyListeners();
+    } catch (_) {
+      print('response error $_');
+    }
+  }
+
+  getBoxesByPickingOrder(PickingOrder pickingorder) async {
+    var pickingorderid = pickingorder.id;
+    final url =
+        'http://192.168.100.3:6543/wms/pickingorders/$pickingorderid/storageboxes';
+    try {
+      final resp = await http.get(url);
+      final boxesResponse = pickingorderFromJson(resp.body);
+      this.boxes = [];
+      this.boxes.addAll(boxesResponse.storageboxes);
+      print('load ok');
+      notifyListeners();
+    } catch (_) {
+      print('response error $_');
     }
   }
 
   setBoxLocation(String box, String location) async {
     final url =
-        'http://bimbo.mtsolutions.io:6543/wms/storagebins/$location/storageboxes/$box';
+        'http://192.168.100.3:6543/wms/storagebins/$location/storageboxes/$box';
 
     try {
       final resp = await http.put(url);
@@ -52,7 +91,7 @@ class StorageService with ChangeNotifier {
       this.getBoxesByBin(location);
       notifyListeners();
     } catch (_) {
-      print('response error');
+      print('response error $_');
     }
   }
 }
