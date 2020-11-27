@@ -38,7 +38,7 @@ class StorageService with ChangeNotifier {
 
   getBoxesByBin(String location) async {
     final url =
-        'http://192.168.100.3:6543/wms/storagebins/$location/storageboxes';
+        'http://bimbo.mtsolutions.io:6543/wms/storagebins/$location/storageboxes';
     try {
       final resp = await http.get(url);
       final boxesResponse = storageunitFromJson(resp.body);
@@ -52,7 +52,7 @@ class StorageService with ChangeNotifier {
   }
 
   fetchOrders() async {
-    final url = 'http://192.168.100.3:6543/wms/pickingorders';
+    final url = 'http://bimbo.mtsolutions.io:6543/wms/pickingorders';
     try {
       final resp = await http.get(url);
       final ordersResponse = pickingorderlistFromJson(resp.body);
@@ -68,7 +68,7 @@ class StorageService with ChangeNotifier {
   getBoxesByPickingOrder(PickingOrder pickingorder) async {
     var pickingorderid = pickingorder.id;
     final url =
-        'http://192.168.100.3:6543/wms/pickingorders/$pickingorderid/storageboxes';
+        'http://bimbo.mtsolutions.io:6543/wms/pickingorders/$pickingorderid/storageboxes';
     try {
       final resp = await http.get(url);
       final boxesResponse = pickingorderFromJson(resp.body);
@@ -82,7 +82,7 @@ class StorageService with ChangeNotifier {
   }
 
   setBoxStatus(String box, int status) async {
-    final url = 'http://192.168.100.3:6543/wms/storageboxes/$box';
+    final url = 'http://bimbo.mtsolutions.io:6543/wms/storageboxes/$box';
     Map<String, String> headers = {"Content-type": "application/json"};
     String payload = '{"id": "$box", "status": "$status"}';
     print(payload);
@@ -98,8 +98,7 @@ class StorageService with ChangeNotifier {
 
   setBoxLocation(String box, String location) async {
     final url =
-        'http://192.168.100.3:6543/wms/storagebins/$location/storageboxes/$box';
-
+        'http://bimbo.mtsolutions.io:6543/wms/storagebins/$location/storageboxes/$box';
     try {
       final resp = await http.put(url);
       print('load ok $resp');
